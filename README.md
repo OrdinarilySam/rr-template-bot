@@ -11,5 +11,7 @@ CLIENT_ID=botsid
 
 
 `pnpm dev` will start the bot and listen for changes
+
 `pnpm build` will build the project
+
 `pnpm start` will build and run the project
