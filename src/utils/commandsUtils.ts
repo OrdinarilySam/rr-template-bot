@@ -1,26 +1,17 @@
 import { Client, REST, Routes } from "discord.js";
 import "dotenv/config";
-import { readdirSync, statSync } from "fs";
-import { join, extname } from "path";
-import type { Command } from "./types/Command";
+import type { Command } from "../types/Command";
+import { getFiles } from "./getFiles";
 
 export async function getCommands(path: string): Promise<Command[]> {
-  const entries = readdirSync(path);
+  const files = await getFiles(path);
+  const commands: Command[] = [];
 
-  let commands: Command[] = [];
+  files.forEach(async (file) => {
+    const { default: command }: { default: Command } = await import(file);
+    commands.push(command);
+  });
 
-  for (const entry of entries) {
-    const fullPath = join(path, entry);
-    const stat = statSync(fullPath);
-
-    if (stat.isDirectory()) {
-      const nestedCommands = await getCommands(fullPath);
-      commands = commands.concat(nestedCommands);
-    } else if ([".ts", ".js"].includes(extname(fullPath))) {
-      const { default: command }: { default: Command } = await import(fullPath);
-      commands.push(command);
-    }
-  }
   return commands;
 }
 
